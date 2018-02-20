@@ -19,7 +19,7 @@ para hacer que esto sea random de alguna manera , haremos una semilla
    for( i = 0 ; i < n ; i++ ) {
       printf("%d\n", rand() % 50);
    }
-
+S
    return(0);
 }
 
@@ -54,4 +54,4 @@ El primer parámetro buffer lo hemos llamado así porque es un puntero a un espa
    es la forma en que fgets sabra a que archivo debe leer.
 
 
-De esta manera , pondremos un lista de objetos separando cada objeto por un salto de linea , y 
+De esta manera , pondremos un lista de objetos separando cada objeto por un salto de linea , y
