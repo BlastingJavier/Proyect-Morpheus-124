@@ -16,6 +16,8 @@
 /*Estructura que define el Graphic_engine tamaño del area*/
 typedef struct _Graphic_engine Graphic_engine;
 
+
+
 /*
  * @brief Tiene la función de crear el área (se generan unos puntos en la
     pantalla con: (x,y,width,height)) de los interfaces del juego
@@ -25,12 +27,18 @@ typedef struct _Graphic_engine Graphic_engine;
     (punteros de tipo Area)
  */
 Graphic_engine* graphic_engine_create();
+
+
+
 /*
  * @brief Tiene la función de liberar la memoria de todos los campos de ge
  * @param "ge", el puntero a "Graphic_engine"
  * @return, ya que es una función de tipo void
  */
 void graphic_engine_destroy(Graphic_engine *ge);
+
+
+
 /*
  * @brief Dibuja cada área en la pantalla de salida (se generan puntos en la
     pantalla con: (x,y,width,height))
