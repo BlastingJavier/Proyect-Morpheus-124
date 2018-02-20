@@ -10,9 +10,13 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "game_reader.h"
 #include "types.h"
-#include "game.h"
+#include "space.h"
+#include "command.h"/*Ya vienen en "game_reader.h"*/
+#include "game.h" /*Ya vienen en "game_reader.h"*/
+
 /**                 Definidos en:
                         ||
                         ||
@@ -30,81 +34,69 @@ P. F.: Private Function
 */
 
 /*
- * @brief funcionalidad de carga de espacios
- * @param game, es el string destino, en el que se copia el puntero al string de tipo char, "toks" 
+ * @brief  Lee el fichero (funcionalidad de carga de espacios)
+ * @param Game, es el string destino, en el que se copia el puntero al string de tipo char, "toks"
  * @param filename, puntero a char, que es el nombre del fichero que estamos accediendo
  * @return status, OK O ERROR
  */
 
-STATUS game_load_spaces(Game* game, char* filename) {
+STATUS game_reader_load_spaces(Game* game, char* filename, int *numcasillas) {
   FILE* file = NULL;
   char line[WORD_SIZE] = "";
   char name[WORD_SIZE] = "";
   char* toks = NULL;
   Id id = NO_ID, north = NO_ID, east = NO_ID, south = NO_ID, west = NO_ID;
   Space* space = NULL;
+  /*Suponemos OK*/
   STATUS status = OK;
-  
+
   if (!filename) {
     return ERROR;
   }
-  
+
   file = fopen(filename, "r");
   if (file == NULL) {
     return ERROR;
   }
 
   /**
-  line: Es un puntero a un espacio de memoria
-  WORD_SIZE: Es el límite de caracteres a leer (macro definida en types.h)
-  file: puntero (archivo)
-  RESUMIENDO: Este bucle, con "fgets", primero, establece donde se copiará el string leído,
-  segundo, establece el numero máximo de caracteres que se pueden leer, la macro
-  y por último, el último parámetro hace referencia a donde se obtienen los datos
+  Este bucle:
+  -Establece donde se copiará el string leído,
+  -Escanea el fichero por líneas (1000 como máximo) y almacena en "line"
   */
   while (fgets(line, WORD_SIZE, file)) {
-    /**
-    int strncmp(const char *s1, const char *s2, size_t n);
-    Compara no más de n caracteres (caracteres posteriores al carácter nulo no se tienen en cuenta)
-    de la cadena apuntada por s1 con la cadena apuntada por s2. //
-    La función retorna un número entero mayor, igual, o menor que cero, apropiadamente
-    según la cadena apuntada por s1 es mayor, igual, o menor que la cadena apuntada por s2.
-    */
-    /*En este caso, no compara más de 3 caracteres*/
+    /*Si los 3 primeros caracteres son #s: */
     if (strncmp("#s:", line, 3) == 0) {
-      /*"strtok" rompe el string "line" en la secuencia del carácter ASCII "|"*/
+      /*Rompemos la cadena en trozos y los separamos con el caracter "|"*/
+      /*Se asigna a las variables el valor obtenido del archivo correspondiente*/
       toks = strtok(line + 3, "|");
-      /*"atol" convierte la porción inicial de la cadena apuntada por "toks" a una representación de "id", y devuelve el valor convertido.
-      Por lo tanto, "id" = valor convertido*/
+      /*"atol" convierte la porción inicial de la cadena apuntada por "toks" a una representación de "id", y lo devuelve.*/
+      /*Por lo tanto, "id" = valor convertido*/
       id = atol(toks);
-      /*Continua la partición en segmentos hasta que "strtok" es NULL, en los demás casos también*/
+      *numcasillas =(int)id;
       toks = strtok(NULL, "|");
       strcpy(name, toks);
+
       toks = strtok(NULL, "|");
-      /*"atol" convierte la porción inicial de la cadena apuntada por "toks" a una representación de "north/east/south/west (Dependiendo de cada uno)", y devuelve el valor convertido.
-      Por lo tanto, "north/east/south/west (Dependiendo de cada uno)" = valor convertido*/
       north = atol(toks);
+
       toks = strtok(NULL, "|");
-      
       east = atol(toks);
+
       toks = strtok(NULL, "|");
-      
       south = atol(toks);
+
       toks = strtok(NULL, "|");
-      
       west = atol(toks);
 
-    #ifdef DEBUG /*Se ejecuta el código de dentro si debug está definido*/
+    #ifdef DEBUG /*Se ejecuta el código de dentro si debug está debug definido*/
 
       printf("Leído: %ld|%s|%ld|%ld|%ld|%ld\n", id, name, north, east, south, west);
 
+
     #endif
-    /**
-    /Asignacion de un nuevo espacio a space (reserva memoria dinamica) y preparacion para asignar punteros con funciones/
-    /Si space_create no devuelve NULL (esta preparado y con memoria dinamica) hara llamadas a las funciones para igualar
-    el nombre , north , etc al puntero space->id (devolvera OK si es asi)
-    */
-    space = space_create(id);
+    /*Asignamos los nuevos valores (leídos con fgets)*/
+      space = space_create(id);
       if (space != NULL) {
 	      space_set_name(space, name);
 	      space_set_north(space, north);
@@ -115,83 +107,12 @@ STATUS game_load_spaces(Game* game, char* filename) {
       }
     }
   }
-
-  if (ferror(file)) {/*Se modifica el estado del código de error "int ferror (FILE* stream) " Devuelve un valor distinto de cero si se detectan errores*/
+  /*Se modifica el estado del código de error y devuelve
+    un valor distinto de cero si se detectan errores*/
+  if (ferror(file)) {
     status = ERROR;
   }
   fclose(file);
 
   return status;
-}
-/*
- * @brief funcionalidad de añadir espacios
- * @param game, puntero a estructura Game (direccion)
- * @param space , puntero a estructura Space (direccion)
- * @return status, OK O ERROR
- */
-STATUS game_add_space(Game* game, Space* space) {
-  int i = 0;
-
-  if (space == NULL) {
-    return ERROR;
-  }
-
-  while ( (i < MAX_SPACES) && (game->spaces[i] != NULL)){
-    i++;
-  }
-
-  if (i >= MAX_SPACES) {
-    return ERROR;
-  }
-
-  game->spaces[i] = space;
-
-  return OK;
-}
-/*
- * @brief funcionalidad leer el id de un espacio
- * @param game, puntero a estructura,(direccion)
- * @param position, posicion del espacio (en el array de punteros a Space)
- * @return NO_ID (si la posicion se sale de limites), space_get_id (la posicion)
- */
-Id game_get_space_id_at(Game* game, int position) {
-
-  if (position < 0 || position >= MAX_SPACES) {
-    return NO_ID;
-  }
-
-  return space_get_id(game->spaces[position]);
-}
-/*
- * @brief funcionalidad de modificar la localizacion del jugador
- * @param game, puntero a Game (direccion)
- * @param id, que nos sirve para asginar el id de la nueva localizacion
- * @return ERROR, en el caso de que lo hubiera
- */
-STATUS game_set_player_location(Game* game, Id id) {
-
-  if (id == NO_ID) {
-    return ERROR;
-  }
-
-  game->player_location = id;
-
-}
-/*
- * @brief funcionalidad de cambio de objetos de localizacion
- * @param game,puntero a la estructura Game 
- * @param id, campo de la estructura Id
- * @return status, OK O ERROR
- */
-STATUS game_set_object_location(Game* game, Id id) {
-
-  int i = 0;
-
-  if (id == NO_ID) {
-    return ERROR;
-  }
-
-  game->object_location = id;
-
-  return OK;
 }
