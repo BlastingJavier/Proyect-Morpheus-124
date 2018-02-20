@@ -1,10 +1,10 @@
 #####################################################
 CC=gcc
 CFLAGS= -g -Wall -pedantic -ansi
-MODULOS= juego_fin_exe
+MODULOS=game_loop_exe
 #HAY QUE PONER MAS
 #########################################################
-OBJECTS = command.o game_loop.o game.o graphic_engine.o screen.o space.o
+OBJECTS = command.o game_loop.o game.o graphic_engine.o screen.o space.o player.o object.o game_reader.o
 OBJECTSCOMMAND = command.o
 OBJECTSGALOOP = game_loop.o
 OBJECTSGAME = game.o
@@ -17,7 +17,7 @@ OBJECTSSPACE = space.o
 DIST_NAME = GAME_PROJECT_MORPHEUS
 #HAY QUE PONER MAS
 ##########################################################
-OBJECTS_TO_CLEAN = command.o game_loop.o game.o graphic_engine.o screen.o space.o
+OBJECTS_TO_CLEAN = command.o game_loop.o game.o graphic_engine.o screen.o space.o object.o game_reader.o player.o
 #HAY QUE PONER MAS
 HEADERS_TO_SUBMIT =*.h
 SOURCES_TO_SUBMIT = command.c game.c graphic_engine.c screen.c space.c game_loop.c
@@ -29,36 +29,36 @@ MEMORIES_TO_SUBMIT =*.pdf
 .PHONY: all
 all: $(MODULOS)
 #COMANDOS
-#MIRAR SI HAY QUE ELIMINARLO
-juego_fin_exe:$(OBJECTS)
+game_loop_exe:$(OBJECTS)
 	$(CC) $(CFLAGS) -o game_loop_exe $(OBJECTS)
 game_loop.o:game_loop.c graphic_engine.h
 	$(CC) $(CFLAGS) -c game_loop.c
 command.o:command.c command.h
 	$(CC) $(CFLAGS) -c command.c
-#MIRAR SI HAY QUE ELIMINARLO
 game.o: game.c game.h command.h space.h
 	$(CC) $(CFLAGS) -c game.c
-#MIRAR SI HAY QUE ELIMINARLO
 graphic_engine.o :graphic_engine.c graphic_engine.h screen.h game.h
 	$(CC) $(CFLAGS) -c graphic_engine.c
-#MIRAR SI HAY QUE ELIMINARLO
 screen.o: screen.c screen.h
 	$(CC) $(CFLAGS) -c screen.c
-#MIRAR SI HAY QUE ELIMINARLO
 space.o: space.c space.h types.h
 	$(CC) $(CFLAGS) -c space.c
+object.o : object.c object.h
+	$(CC) $(CFLAGS) -c object.c
+player.o : player.c player.h
+	$(CC) $(CFLAGS) -c player.c
+game_reader.o : game_reader.c game_reader.h
+	$(CC) $(CFLAGS) -c game_reader.c
 
 
-#HAY DUDA GENERALIZADA CON LAS DEPENDENCIAS DE LOS ARCHIVOS .h
 
 .PHONY: valgrind
-valgrind:
-	valgrind ./game_loop_exe --args data.dat
+valgrind:game_loop_exe
+	valgrind ./game_loop_exe data.dat
 
 .PHONY: clear
 clear:
-	rm -rf $(OBJECTS_TO_CLEAN) *.dSYM #borra todos los objetos excepto el octaedro.o
+	rm -rf $(OBJECTS_TO_CLEAN) *.dSYM
 
 .PHONY: clean
 clean: clear
